@@ -342,7 +342,7 @@ function mainScreen() {
   const lines = [
     { text: "[SYSTEM] LINE: OBSCURA INDUSTRIAL TERMINAL", cls: "system" },
     {
-  text: signedId
+  text: alreadySignedId
     ? "[STATUS] ACCESS LEVEL: SIGNED"
     : "[STATUS] ACCESS LEVEL: UNASSIGNED",
   cls: "system"
@@ -380,7 +380,7 @@ if(alreadySignedId) {
   lines.push({ text: "[2] SIGN EMPLOYMENT CONTRACT IN TERMINAL", action: "sign" });
 }
 
-if (signedId) {
+if (alreadySignedId) {
   lines.push({
     text: "[3] WRITE INTERNAL MESSAGE",
     action: "message"
@@ -540,6 +540,7 @@ setInterval(() => {
 
 </body>
 </html>
+
 
 
 
