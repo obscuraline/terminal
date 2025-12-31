@@ -245,34 +245,45 @@ const boot = [
 ];
 
 function typeLines(lines, speed, cb) {
-            let i = 0;
-            function next() {
-                if (i >= lines.length) { if (cb) cb(); return; }
-                const d = document.createElement("div");
-                d.className = "line " + (lines[i].cls || "");
-                content.appendChild(d);
-                let j = 0;
-                const t = lines[i].text;
-                const it = setInterval(() => {
-                    d.textContent = t.slice(0, j++);
-                    if (j > t.length) {
-                        clearInterval(it);
-                        // === ВАЖНО: действия ===
-                        if (lines[i].action) {
-                            d.classList.add("choice");
-                            const currentAction = lines[i].action;
-                            d.addEventListener("click", () => { handleAction(currentAction); });
-                            const cursor = document.createElement("span");
-                            cursor.className = "cursor";
-                            d.appendChild(cursor);
-                        }
-                        i++;
-                        setTimeout(next, 200);
-                    }
-                }, speed);
-            }
-            next();
+  let i = 0;
+  function next() {
+    if (i >= lines.length) { if (cb) cb(); return; }
+
+    const line = lines[i];
+
+    if(line.render) {
+      line.render();
+      i++;
+      setTimeout(next, 200);
+      return;
+    }
+
+    const d = document.createElement("div");
+    d.className = "line " + (line.cls || "");
+    content.appendChild(d);
+
+    let j = 0;
+    const t = line.text;
+    const it = setInterval(() => {
+      d.textContent = t.slice(0, j++);
+      if (j > t.length) {
+        clearInterval(it);
+        if (line.action) {
+          d.classList.add("choice");
+          const currentAction = line.action;
+          d.addEventListener("click", () => { handleAction(currentAction); });
+          const cursor = document.createElement("span");
+          cursor.className = "cursor";
+          d.appendChild(cursor);
         }
+        i++;
+        setTimeout(next, 200);
+      }
+    }, speed);
+  }
+  next();
+}
+
 
 
 function clearTerminal(cb) {
@@ -306,11 +317,21 @@ function mainScreen() {
     { text: "[1] OPEN EMPLOYMENT CONTRACT (VIEW)", action: "pdf" }
   ];
 
-  if(alreadySignedId) {
-    lines.push({ text: "[2] CONTRACT ALREADY SIGNED: " + alreadySignedId, cls: "system" });
-  } else {
-    lines.push({ text: "[2] SIGN EMPLOYMENT CONTRACT IN TERMINAL", action: "sign" });
-  }
+if(alreadySignedId) {
+  lines.push({
+    text: "[2] CONTRACT ALREADY SIGNED: ",
+    cls: "system",
+    action: null,
+    render: () => {
+      const div = document.createElement("div");
+      div.className = "line system";
+      div.innerHTML = "[2] CONTRACT ALREADY SIGNED: <span class='warning'>" + alreadySignedId + "</span>";
+      content.appendChild(div);
+    }
+  });
+} else {
+  lines.push({ text: "[2] SIGN EMPLOYMENT CONTRACT IN TERMINAL", action: "sign" });
+}
 
   typeLines(lines, 22);
 }
@@ -407,5 +428,6 @@ setInterval(() => {
 
 </body>
 </html>
+
 
 
