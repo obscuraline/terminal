@@ -284,7 +284,9 @@ function clearTerminal(cb) {
 
 /* MAIN SCREEN */
 function mainScreen() {
-  typeLines([
+  const alreadySignedId = localStorage.getItem("signedWorkerId");
+
+  const lines = [
     { text: "[SYSTEM] LINE: OBSCURA INDUSTRIAL TERMINAL", cls: "system" },
     { text: "[STATUS] ACCESS LEVEL: UNASSIGNED", cls: "system" },
     { text: "[TIME] " + getMoscowTime(), cls: "system" },
@@ -301,10 +303,18 @@ function mainScreen() {
     { text: "SELECT AVAILABLE ACTION:", cls: "" },
     { text: "", cls: "" },
 
-    { text: "[1] OPEN EMPLOYMENT CONTRACT (VIEW)", action: "pdf" },
-    { text: "[2] SIGN EMPLOYMENT CONTRACT IN TERMINAL", action: "sign" }
-  ], 22);
+    { text: "[1] OPEN EMPLOYMENT CONTRACT (VIEW)", action: "pdf" }
+  ];
+
+  if(alreadySignedId) {
+    lines.push({ text: "[2] CONTRACT ALREADY SIGNED: " + alreadySignedId, cls: "system" });
+  } else {
+    lines.push({ text: "[2] SIGN EMPLOYMENT CONTRACT IN TERMINAL", action: "sign" });
+  }
+
+  typeLines(lines, 22);
 }
+
 
 /* ACTIONS */
 function handleAction(action) {
@@ -397,4 +407,5 @@ setInterval(() => {
 
 </body>
 </html>
+
 
