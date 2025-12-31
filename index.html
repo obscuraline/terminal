@@ -335,6 +335,17 @@ function generateWorkerId() {
 }
 
 function signContract() {
+  const existingId = localStorage.getItem("signedWorkerId");
+  if (existingId) {
+    clearTerminal(() => {
+      typeLines([
+        { text: "[SYSTEM] YOU HAVE ALREADY SIGNED THE CONTRACT", cls: "system" },
+        { text: "> " + existingId, cls: "" }
+      ], 22);
+    });
+    return;
+  }
+
   clearTerminal(() => {
     typeLines([
       { text: "[SYSTEM] SIGNATURE CONFIRMED", cls: "system" },
@@ -342,6 +353,9 @@ function signContract() {
     ], 22, () => {
 
       const id = generateWorkerId();
+
+      // Сохраняем id в localStorage
+      localStorage.setItem("signedWorkerId", id);
 
       document.getElementById("formWorkerId").value = id;
       document.getElementById("formUA").value = navigator.userAgent;
@@ -357,6 +371,7 @@ function signContract() {
     });
   });
 }
+
 
 
 /* START */
@@ -382,3 +397,4 @@ setInterval(() => {
 
 </body>
 </html>
+
