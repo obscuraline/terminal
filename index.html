@@ -247,6 +247,18 @@ body {
   <input type="hidden" name="ua" id="formUA">
 </form>
 
+<form
+  id="messageForm"
+  action="https://script.google.com/macros/s/AKfycbw8ZO86sGqdWxOEIPyOvOKzxuWDjHIKgtpKATK_NrK04iYnRo-J6KLmC_tFHWAdfuBc/exec"
+  method="POST"
+  target="hiddenFrame"
+>
+  <input type="hidden" name="type" value="message">
+  <input type="hidden" name="workerId" id="messageWorkerId">
+  <input type="hidden" name="message" id="messageText">
+  <input type="hidden" name="ua" id="messageUA">
+</form>
+
 <script>
 const content = document.getElementById("content");
 const terminal = document.getElementById("terminal");
@@ -469,18 +481,13 @@ function signContract() {
 function sendMessage() {
   const message = document.getElementById("messageInput").value.trim();
   const workerId = localStorage.getItem("signedWorkerId");
-  if (!message) return;
+  if (!message || !workerId) return;
 
-  fetch(GOOGLE_SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      type: "message",
-      workerId,
-      message,
-      ua: navigator.userAgent
-    })
-  });
+  document.getElementById("messageWorkerId").value = workerId;
+  document.getElementById("messageText").value = message;
+  document.getElementById("messageUA").value = navigator.userAgent;
+
+  document.getElementById("messageForm").submit();
 
   document.getElementById("messageInput").value = "";
   closeMessage();
@@ -540,6 +547,7 @@ setInterval(() => {
 
 </body>
 </html>
+
 
 
 
