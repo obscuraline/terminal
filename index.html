@@ -154,6 +154,20 @@ body {
   background: #000;
 }
 
+.line.system {
+  letter-spacing: 0.5px;
+}
+
+.warning {
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
 /* ===== MOBILE ===== */
 
 @media (max-width: 768px) {
@@ -192,11 +206,39 @@ body {
   </div>
 </div>
 
+<div class="modal" id="messageModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span>INTERNAL COMMUNICATION CHANNEL</span>
+      <span onclick="closeMessage()">[ CLOSE ]</span>
+      <span onclick="sendMessage()">[ SEND ]</span>
+    </div>
+    <div class="modal-body">
+      <textarea
+        id="messageInput"
+        placeholder="TYPE YOUR MESSAGE HERE..."
+        style="
+          width:100%;
+          height:100%;
+          background:#000;
+          color:#b5b5b5;
+          border:none;
+          resize:none;
+          padding:12px;
+          font-family:'Courier New', monospace;
+          font-size:13px;
+          outline:none;
+        "
+      ></textarea>
+    </div>
+  </div>
+</div>
+
 <iframe name="hiddenFrame" style="display:none;"></iframe>
 
 <form
   id="signForm"
-  action="https://script.google.com/macros/s/AKfycbx-lMvkoLFXF4L0TQiKWiD3orBT5Y-6vlM354haVZIZxyhwMqiKrkicHhJ6glIB_4k/exec"
+  action="https://script.google.com/macros/s/AKfycbw8ZO86sGqdWxOEIPyOvOKzxuWDjHIKgtpKATK_NrK04iYnRo-J6KLmC_tFHWAdfuBc/exec"
   method="POST"
   target="hiddenFrame"
 >
@@ -210,7 +252,7 @@ const content = document.getElementById("content");
 const terminal = document.getElementById("terminal");
 const noise = document.getElementById("noise");
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-lMvkoLFXF4L0TQiKWiD3orBT5Y-6vlM354haVZIZxyhwMqiKrkicHhJ6glIB_4k/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8ZO86sGqdWxOEIPyOvOKzxuWDjHIKgtpKATK_NrK04iYnRo-J6KLmC_tFHWAdfuBc/exec";
 
 /* TIME (MOSCOW) */
 function getMoscowTime() {
@@ -299,7 +341,12 @@ function mainScreen() {
 
   const lines = [
     { text: "[SYSTEM] LINE: OBSCURA INDUSTRIAL TERMINAL", cls: "system" },
-    { text: "[STATUS] ACCESS LEVEL: UNASSIGNED", cls: "system" },
+    {
+  text: signedId
+    ? "[STATUS] ACCESS LEVEL: SIGNED"
+    : "[STATUS] ACCESS LEVEL: UNASSIGNED",
+  cls: "system"
+    },
     { text: "[TIME] " + getMoscowTime(), cls: "system" },
     { text: " ", cls: "" },
 
@@ -333,6 +380,13 @@ if(alreadySignedId) {
   lines.push({ text: "[2] SIGN EMPLOYMENT CONTRACT IN TERMINAL", action: "sign" });
 }
 
+if (signedId) {
+  lines.push({
+    text: "[3] WRITE INTERNAL MESSAGE",
+    action: "message"
+  });
+}
+
   typeLines(lines, 22);
 }
 
@@ -341,6 +395,7 @@ if(alreadySignedId) {
 function handleAction(action) {
   if (action === "pdf") openPDF();
   if (action === "sign") signContract();
+  if (action === "message") openMessage();
 }
 
 /* PDF */
@@ -352,6 +407,14 @@ function closePDF() {
 }
 function downloadPDF() {
   window.open("dogovor.pdf", "_blank");
+}
+
+function openMessage() {
+  document.getElementById("messageModal").style.display = "flex";
+}
+
+function closeMessage() {
+  document.getElementById("messageModal").style.display = "none";
 }
 
 /* SIGN */
@@ -403,7 +466,56 @@ function signContract() {
   });
 }
 
+function sendMessage() {
+  const message = document.getElementById("messageInput").value.trim();
+  const workerId = localStorage.getItem("signedWorkerId");
+  if (!message) return;
 
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "message",
+      workerId,
+      message,
+      ua: navigator.userAgent
+    })
+  });
+
+  document.getElementById("messageInput").value = "";
+  closeMessage();
+
+  transmitMessageAnimation(message.length);
+}
+
+function transmitMessageAnimation(messageLength) {
+  const packets = Math.min(8, Math.max(3, Math.floor(messageLength / 40)));
+
+  const lines = [
+    { text: "[SYSTEM] OPENING SECURE COMMUNICATION CHANNEL", cls: "system" },
+    { text: "[CHANNEL] ID: LINE-OBSCURA::INT", cls: "system" },
+    { text: " ", cls: "" },
+    { text: "[DATA] FRAGMENTING MESSAGE", cls: "system" },
+  ];
+
+  for (let i = 1; i <= packets; i++) {
+    lines.push({
+      text: `[DATA] TRANSMITTING PACKET ${i}/${packets}`,
+      cls: "system"
+    });
+  }
+
+  lines.push(
+    { text: " ", cls: "" },
+    { text: "[CHANNEL] AWAITING CONFIRMATION...", cls: "system" },
+    { text: "[CHANNEL] TRANSMISSION CONFIRMED", cls: "warning" },
+    { text: "[SYSTEM] CHANNEL CLOSED", cls: "system" }
+  );
+
+  clearTerminal(() => {
+    typeLines(lines, 18);
+  });
+}
 
 /* START */
 typeLines(boot.map(t => ({ text: t })), 18, () => {
@@ -428,6 +540,7 @@ setInterval(() => {
 
 </body>
 </html>
+
 
 
 
